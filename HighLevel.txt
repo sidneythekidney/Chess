@@ -1,0 +1,17 @@
+Objects in the game:
+
+Pieces
+
+1. Be able to find available moves.
+2. Be able to move to those available squares.
+
+Game Board
+
+1. Contain pieces.
+2. Display Pieces.
+3. Display potential moves.
+
+Human/AI Players
+
+1. Make moves based on available moves.
+2. See the board and make decisions based on what is on the board.
