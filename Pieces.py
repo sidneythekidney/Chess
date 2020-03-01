@@ -501,8 +501,8 @@ class Piece:
                                         player_1_pieces, player_2_pieces).current_position = [tile.coordinate[0], tile.coordinate[1]-1]
                     #GameBoard.paint_corner([tile.coordinate[0],7])
                     painted_tile = [tile.coordinate[0],7]        
-        if self.name == "Pawn": # and ((self.current_position[0] == 6 and self.player == 1)
-        #                             or (self.current_position[0] == 1 and self.player == 2)):
+        if self.name == "Pawn" and ((self.current_position[0] == 6 and self.player == 1)
+                                     or (self.current_position[0] == 1 and self.player == 2)):
             self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
                     
         if self.name == "Rook":
@@ -566,7 +566,6 @@ class Piece:
                 pygame.display.update()
 
                 for event in pygame.event.get():
-                    pygame.display.update()
                     display_text(gameDisplay, title, (69, 241, 247), (750,25))
                     #Highlight the squares if the user hovers over them:
                     if event.pos != None:
@@ -601,11 +600,10 @@ class Piece:
                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                     selected = True
                                     selected_piece = "Knight"
-
             self.name = selected_piece
             self.image = self.color + "_" + selected_piece + ".png"
             pygame.draw.rect(gameDisplay, (122,122,122),(600,0,300,600))
-            # self.display_piece_to_screen(tiles, gameDisplay)
+            
             
 # Helper function for adding two arrays:
 def adder(array1, array2):
