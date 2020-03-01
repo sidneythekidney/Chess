@@ -5,12 +5,13 @@ import GameBoard
 import Player
 import copy
 
+white = (255,255,255)
+
 
 class Piece:
     def __init__(self, name, starting_position, image, player):
         self.name = name
         self.starting_position = starting_position
-        self.image = image
         self.player = player
         self.current_position = starting_position
         self.potential_moves = []
@@ -22,6 +23,13 @@ class Piece:
         if name == "King":
             self.castle_QS = True
             self.castle_KS = True
+        self.image = image
+        for i in range(len(image)):
+            if (image[i] == "_"):
+                end = i
+                self.color = image[0:end]
+                break
+
 
     def display_piece_to_screen(self, tiles, gameDisplay):
         # Takes in an array of tiles
@@ -55,7 +63,7 @@ class Piece:
         self.potential_moves = final_moves
         return final_moves
 
-    def induces_check(self, tiles, player_1_pieces, player_2_pieces):
+    def induces_check(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
         #Change this so we are working with copies
         copy_1 = copy.deepcopy(player_1_pieces)
         copy_2 = copy.deepcopy(player_2_pieces)
@@ -72,7 +80,7 @@ class Piece:
         for i in range(len(copy_self.potential_moves)):
             #print(str(self.potential_moves[i][0])+", "+str(self.potential_moves[i][1]))
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
-                       tiles, copy_1, copy_2)
+                       tiles, copy_1, copy_2, gameDisplay, False)
             if copy_self.player == 1:
                 if(copy_self.check(tiles, copy_1, copy_2, 2)):
                     delete_list.append(i)
@@ -131,7 +139,7 @@ class Piece:
                     return True
         return False
 
-    def checkmate(self, tiles, player_1_pieces, player_2_pieces, player):
+    def checkmate(self, tiles, player_1_pieces, player_2_pieces, player, gameDisplay):
         #A king is in checkmate if it does not have any moves that will move it safety
         # and no other pieces can block the piece or pieces inducing check.
 
@@ -146,11 +154,11 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2)
+                                    tiles,copy_1, copy_2, gameDisplay, False)
                    if(not self.check(tiles, copy_1, copy_2, 1)):
-                       print(piece.name)
-                       print(piece.current_position)
-                       print("not checkmate")
+                    #    print(piece.name)
+                    #    print(piece.current_position)
+                    #    print("not checkmate")
                        return False
                    piece.current_position = original_position
                    del copy_1
@@ -162,11 +170,11 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2)
+                                    tiles,copy_1, copy_2, gameDisplay, False)
                    if(not self.check(tiles, copy_1, copy_2, 2)):
-                       print(piece.name)
-                       print(piece.current_position)
-                       print("not checkmate")
+                    #    print(piece.name)
+                    #    print(piece.current_position)
+                    #    print("not checkmate")
                        return False
                    piece.current_position = original_position
                    del copy_2
@@ -200,23 +208,25 @@ class Piece:
                 #Check for possible en passants:
                     right_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
                     if right_piece != None:
-                        print("1")
-                        if((right_piece.player == 2) and (right_piece.name == "Pawn")):
-                            print("2")
-                            print(right_piece.en_passant)
+                        # print("1")
+                        if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
+                            # print("2")
+                            # print(right_piece.en_passant)
+                            # print("white pawn")
                             #Bug where right_piece.en_passant = False
                             #This occurs because we calculate the moves for every piece.
                             if right_piece.en_passant == True:
-                                print("3")
+                                # print("3")
                                 potential_moves.append(adder(cur,[1,1]))
                                 
                     left_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
                     if left_piece != None:
-                        print("1")
+                        # print("1")
                         if((left_piece.player == 2) and (left_piece.name == "Pawn")):
-                            print("2")
+                            # print("black pawn")
+                            # print("2")
                             if left_piece.en_passant == True:
-                                print("3")
+                                # print("3")
                                 potential_moves.append(adder(cur,[1,-1]))
                                 
                 if change == False:
@@ -453,8 +463,11 @@ class Piece:
 
     # def move_piece(self, position_to_move_to):
 
-    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces):
+    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote):
+        painted_tiles = []
         painted_tile = None
+        curr_pos = [self.current_position[1], self.current_position[0]]
+        painted_tiles.append(curr_pos)
         for i in range(len(player_1_pieces)):
             if player_1_pieces[i].current_position == tile.coordinate:
                 del player_1_pieces[i]
@@ -487,7 +500,10 @@ class Piece:
                     self.get_piece_on_tile([tile.coordinate[0], tile.coordinate[1]+2],
                                         player_1_pieces, player_2_pieces).current_position = [tile.coordinate[0], tile.coordinate[1]-1]
                     #GameBoard.paint_corner([tile.coordinate[0],7])
-                    painted_tile = [tile.coordinate[0],7]
+                    painted_tile = [tile.coordinate[0],7]        
+        if self.name == "Pawn": # and ((self.current_position[0] == 6 and self.player == 1)
+        #                             or (self.current_position[0] == 1 and self.player == 2)):
+            self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
                     
         if self.name == "Rook":
             if self.sub_name == "QS":
@@ -513,13 +529,98 @@ class Piece:
                         player_2_pieces[i].castle_KS = False
                         break
         self.current_position = tile.coordinate
+        # pygame.display.update()
         #self.check(player_1_pieces, player_2_pieces)
         return painted_tile
 
+    def promote_pawn(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, possible):
+        #Display piece options on screen to right of gameboard:
+        #piece options include bishop, knight, rook and queen
+        #We just need to change the image and name of the piece
+        print("promoting pawn")
+        if possible:
+            piece_list = ["Queen", "Rook", "Bishop", "Knight"]
+            font = pygame.font.Font('freesansbold.ttf', 18)
+
+            title = "Select a piece to upgrade pawn"
+            
+            selected = False
+            self.current_position = tile.coordinate
+
+            while not selected:
+                # print(str(self.current_position[0]) + " "+ str(self.current_position[1]))
+                # pygame.draw.rect(gameDisplay, (229, 250, 5),
+                # (self.current_position[1]*75, (7-self.current_position[0])*75, 75, 75))
+                for i in range(2):
+                    pygame.draw.rect(gameDisplay, white, (650+125*i,100,75,75))
+                    display_text(gameDisplay, piece_list[i], (69, 241, 247),(650+125*i+37,190))
+                    image_name = self.color + "_" + piece_list[i] + ".png"
+                    display_image(gameDisplay, image_name, (657+125*i, 108))
+
+                for i in range(2):
+                    pygame.draw.rect(gameDisplay, white,(650+125*i,250,75,75))
+                    display_text(gameDisplay, piece_list[i+2], (69, 241, 247),(650+125*i+37,340))
+                    image_name = self.color + "_" + piece_list[i+2] + ".png"
+                    display_image(gameDisplay, image_name, (657+125*i, 258))
+
+                pygame.display.update()
+
+                for event in pygame.event.get():
+                    pygame.display.update()
+                    display_text(gameDisplay, title, (69, 241, 247), (750,25))
+                    #Highlight the squares if the user hovers over them:
+                    if event.pos != None:
+                        if event.pos[0] > 650 and event.pos[0] < 725:
+                            if event.pos[1] > 100 and event.pos[1] < 175:
+                                pygame.draw.rect(gameDisplay, (36, 201, 39) ,(650,100,75,75))
+                                display_image(gameDisplay, self.color+"_Queen.png", (657, 108))
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    selected = True
+                                    selected_piece = "Queen"
+
+                        if event.pos[0] > 775 and event.pos[0] < 850:
+                            if event.pos[1] > 100 and event.pos[1] < 175:
+                                pygame.draw.rect(gameDisplay, (36, 201, 39) ,(650+125,100,75,75))
+                                display_image(gameDisplay, self.color+"_Rook.png", (657+125, 108))
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    selected = True
+                                    selected_piece = "Rook"
+
+                        if event.pos[0] > 650 and event.pos[0] < 725:
+                            if event.pos[1] > 250 and event.pos[1] < 325:
+                                pygame.draw.rect(gameDisplay, (36, 201, 39) ,(650,250,75,75))
+                                display_image(gameDisplay, self.color+"_Bishop.png", (657, 258))
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    selected = True
+                                    selected_piece = "Bishop"
+
+                        if event.pos[0] > 775 and event.pos[0] < 850:
+                            if event.pos[1] > 250 and event.pos[1] < 325:
+                                pygame.draw.rect(gameDisplay, (36, 201, 39) ,(650+125,250,75,75))
+                                display_image(gameDisplay, self.color+"_Knight.png", (657+125, 258))
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    selected = True
+                                    selected_piece = "Knight"
+
+            self.name = selected_piece
+            self.image = self.color + "_" + selected_piece + ".png"
+            pygame.draw.rect(gameDisplay, (122,122,122),(600,0,300,600))
+            # self.display_piece_to_screen(tiles, gameDisplay)
+            
 # Helper function for adding two arrays:
 def adder(array1, array2):
     return_array = []
     for i in range(min(len(array1), len(array2))):
         return_array.append(array1[i] + array2[i])
     return return_array
-        
+
+def display_text(gameDisplay, text, color, center_pos):
+    font = pygame.font.Font('freesansbold.ttf', 18)
+    text = font.render(text, True, color)
+    textRect = text.get_rect()
+    textRect.center = center_pos
+    gameDisplay.blit(text, textRect)
+
+def display_image(gameDisplay, image_name, pos):
+    figure = pygame.image.load(image_name)
+    gameDisplay.blit(figure, pos)

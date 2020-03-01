@@ -4,6 +4,7 @@ import pygame
 import GameBoard
 import Player
 import Pieces
+import time
 
 class Tile:
     def __init__(self, x_position, y_position, height, coordinate, color):
@@ -124,10 +125,10 @@ class GameBoard:
             #Display piece to screen
 
     def display_pieces(self):
-        for i in range(len(self.player_1_pieces)):
-            self.player_1_pieces[i].display_piece_to_screen(self.tiles,self.gameDisplay)
-        for i in range(len(self.player_2_pieces)):
-            self.player_2_pieces[i].display_piece_to_screen(self.tiles,self.gameDisplay)
+        for piece in self.player_1_pieces:
+            piece.display_piece_to_screen(self.tiles,self.gameDisplay)
+        for piece in self.player_2_pieces:
+            piece.display_piece_to_screen(self.tiles,self.gameDisplay)
         pygame.display.update()
 
     def get_piece_on_tile(self, tile):
@@ -165,19 +166,22 @@ class GameBoard:
                 self.already_highlighted = False
             else:
                 return tile
-        self.display_pieces()
+        # self.display_pieces()
+        # pygame.display.update()
 
     def display_possible_moves(self, tile):
         possible_moves = []
         for piece in self.player_1_pieces:
             if tile.coordinate == piece.current_position:
                 possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces)
-                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces)
+                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                    self.gameDisplay)
                 break
         for piece in self.player_2_pieces:
             if tile.coordinate == piece.current_position:
                 possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces)
-                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces)
+                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                    self.gameDisplay)
                 break
         for move in possible_moves:
             pygame.draw.circle(self.gameDisplay, (102, 255, 51),
@@ -202,12 +206,38 @@ class GameBoard:
         if piece == None:
             return
         if tile.coordinate in piece.potential_moves:
-            painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces)
+            self.highlight_square(click_location)
+
+            # print("Getting here")
+
+            # for i in range(len(self.player_1_pieces)):
+            #     print(self.player_1_pieces[i].color + " " +
+            #           self.player_1_pieces[i].name + ": " + 
+            #           str(self.player_1_pieces[i].current_position))
+            # for i in range(len(self.player_2_pieces)):
+            #     print(self.player_2_pieces[i].color + " " +
+            #           self.player_2_pieces[i].name + ": " + 
+            #           str(self.player_2_pieces[i].current_position))
+
+            # ERROR OCCURING BEFORE THIS LINE, ERROR IN DISPLAYING PIECES. PIECE POSITIONS CORRECT
+            # time.sleep(5)
+            # Position of the piece is correct but piece not displaying:
+            # self.display_pieces()
+            # time.sleep(2)
+            # pygame.display.update()
+            painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
+                            self.gameDisplay, True)
+            # for piece in self.player_1_pieces:
+            #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
+            # for piece in self.player_2_pieces:
+            #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             if painted_tile != None:
                 self.paint_corner(painted_tile)
             if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player)):
-                piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player)
+                piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player,
+                                self.gameDisplay)
         self.already_highlighted = False
+        self.display_pieces()
         
     def determine_tile_click(self, click_location):
         for tile in self.tiles:
@@ -216,7 +246,7 @@ class GameBoard:
                 if(click_location[1] > tile.y_position
                    and click_location[1] < tile.y_position + tile.height):
                     return tile
-        
+
 
     def play_game(self):
         won = False

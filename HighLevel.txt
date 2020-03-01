@@ -4,6 +4,8 @@ Pieces
 
 1. Be able to find available moves.
 2. Be able to move to those available squares.
+3. En Passants for pawns.
+4. Allow pieces to be upgraded.
 
 Game Board
 
