@@ -207,27 +207,27 @@ class Piece:
                             
                 #Check for possible en passants:
                     right_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
-                    if right_piece != None:
+                    # if right_piece != None:
                         # print("1")
-                        if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
+                        # if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
                             # print("2")
                             # print(right_piece.en_passant)
                             # print("white pawn")
                             #Bug where right_piece.en_passant = False
                             #This occurs because we calculate the moves for every piece.
-                            if right_piece.en_passant == True:
-                                # print("3")
-                                potential_moves.append(adder(cur,[1,1]))
+                            # if right_piece.en_passant == True:
+                            #     # print("3")
+                            #     potential_moves.append(adder(cur,[1,1]))
                                 
                     left_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
-                    if left_piece != None:
-                        # print("1")
-                        if((left_piece.player == 2) and (left_piece.name == "Pawn")):
-                            # print("black pawn")
-                            # print("2")
-                            if left_piece.en_passant == True:
-                                # print("3")
-                                potential_moves.append(adder(cur,[1,-1]))
+                    # if left_piece != None:
+                    #     # print("1")
+                    #     if((left_piece.player == 2) and (left_piece.name == "Pawn")):
+                    #         # print("black pawn")
+                    #         # print("2")
+                    #         # if left_piece.en_passant == True:
+                    #         #     # print("3")
+                    #         #     potential_moves.append(adder(cur,[1,-1]))
                                 
                 if change == False:
                     self.en_passant = False
@@ -464,10 +464,8 @@ class Piece:
     # def move_piece(self, position_to_move_to):
 
     def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote):
-        painted_tiles = []
         painted_tile = None
         curr_pos = [self.current_position[1], self.current_position[0]]
-        painted_tiles.append(curr_pos)
         for i in range(len(player_1_pieces)):
             if player_1_pieces[i].current_position == tile.coordinate:
                 del player_1_pieces[i]
@@ -562,6 +560,11 @@ class Piece:
                     display_text(gameDisplay, piece_list[i+2], (69, 241, 247),(650+125*i+37,340))
                     image_name = self.color + "_" + piece_list[i+2] + ".png"
                     display_image(gameDisplay, image_name, (657+125*i, 258))
+
+                for piece in player_1_pieces:
+                    piece.display_piece_to_screen(tiles, gameDisplay)
+                for piece in player_2_pieces:
+                    piece.display_piece_to_screen(tiles, gameDisplay)
 
                 pygame.display.update()
 
