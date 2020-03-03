@@ -207,25 +207,17 @@ class Piece:
                             
                 #Check for possible en passants:
                     right_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
-                    # if right_piece != None:
-                        # print("1")
-                        # if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
-                            # print("2")
-                            # print(right_piece.en_passant)
-                            # print("white pawn")
-                            #Bug where right_piece.en_passant = False
-                            #This occurs because we calculate the moves for every piece.
-                            # if right_piece.en_passant == True:
-                            #     # print("3")                                
-                    left_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
-                    # if left_piece != None:
-                    #     # print("1")
-                    #     if((left_piece.player == 2) and (left_piece.name == "Pawn")):
-                    #         # print("black pawn")
-                    #         # print("2")
-                    #         # if left_piece.en_passant == True:
-                    #         #     # print("3")
-                    #         #     potential_moves.append(adder(cur,[1,-1]))
+                    if right_piece != None:
+                        if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
+                            print(right_piece.en_passant)
+                            if right_piece.en_passant == True:
+                                # Bug: Piece is not being declared 
+                                potential_moves.append(adder(cur,[1,1]))                             
+                    left_piece = self.get_piece_on_tile(adder(cur, [0,-1]), player_1_pieces, player_2_pieces)
+                    if left_piece != None:
+                        if((left_piece.player == 2) and (left_piece.name == "Pawn") and self.player == 1):
+                            if left_piece.en_passant == True:
+                                potential_moves.append(adder(cur,[1,-1]))                             
                                 
                 if change == False:
                     self.en_passant = False
@@ -512,6 +504,7 @@ class Piece:
             # Allow the pawn to be en passanted:
             # If the pawn gets moved up two spaces it can be immediately en-passanted
             if(self.current_position[0] == 1 and self.player == 1 and tile.coordinate[0] == 3 and en_passant):
+                print("en_passant!")
                 self.en_passant = True
             if(self.current_position[0] == 6 and self.player == 2 and tile.coordinate[0] == 4 and en_passant):
                 self.en_passant = True
