@@ -226,7 +226,7 @@ class GameBoard:
             # time.sleep(2)
             # pygame.display.update()
             painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
-                            self.gameDisplay, True)
+                            self.gameDisplay, True, True)
             # for piece in self.player_1_pieces:
             #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             # for piece in self.player_2_pieces:

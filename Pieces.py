@@ -80,7 +80,7 @@ class Piece:
         for i in range(len(copy_self.potential_moves)):
             #print(str(self.potential_moves[i][0])+", "+str(self.potential_moves[i][1]))
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
-                       tiles, copy_1, copy_2, gameDisplay, False)
+                       tiles, copy_1, copy_2, gameDisplay, False, False)
             if copy_self.player == 1:
                 if(copy_self.check(tiles, copy_1, copy_2, 2)):
                     delete_list.append(i)
@@ -154,7 +154,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False, False)
                    if(not self.check(tiles, copy_1, copy_2, 1)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -170,7 +170,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False, False)
                    if(not self.check(tiles, copy_1, copy_2, 2)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -216,9 +216,7 @@ class Piece:
                             #Bug where right_piece.en_passant = False
                             #This occurs because we calculate the moves for every piece.
                             # if right_piece.en_passant == True:
-                            #     # print("3")
-                            #     potential_moves.append(adder(cur,[1,1]))
-                                
+                            #     # print("3")                                
                     left_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
                     # if left_piece != None:
                     #     # print("1")
@@ -463,7 +461,7 @@ class Piece:
 
     # def move_piece(self, position_to_move_to):
 
-    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote):
+    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):
         painted_tile = None
         curr_pos = [self.current_position[1], self.current_position[0]]
         for i in range(len(player_1_pieces)):
@@ -474,7 +472,15 @@ class Piece:
             if player_2_pieces[i].current_position == tile.coordinate:
                 del player_2_pieces[i]
                 break
-            
+        
+        if en_passant:
+            if self.player == 2:
+                for piece in player_2_pieces:
+                    piece.en_passant = False
+            if self.player == 1:
+                for piece in player_1_pieces:
+                    piece.en_passant = False
+
         if self.name == "King":
             
             self.castle_QS = False
@@ -499,10 +505,16 @@ class Piece:
                                         player_1_pieces, player_2_pieces).current_position = [tile.coordinate[0], tile.coordinate[1]-1]
                     #GameBoard.paint_corner([tile.coordinate[0],7])
                     painted_tile = [tile.coordinate[0],7]        
-        if self.name == "Pawn" and ((self.current_position[0] == 6 and self.player == 1)
+        if self.name == "Pawn":
+            if ((self.current_position[0] == 6 and self.player == 1)
                                      or (self.current_position[0] == 1 and self.player == 2)):
-            self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
-                    
+                self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
+            # Allow the pawn to be en passanted:
+            # If the pawn gets moved up two spaces it can be immediately en-passanted
+            if(self.current_position[0] == 1 and self.player == 1 and tile.coordinate[0] == 3 and en_passant):
+                self.en_passant = True
+            if(self.current_position[0] == 6 and self.player == 2 and tile.coordinate[0] == 4 and en_passant):
+                self.en_passant = True
         if self.name == "Rook":
             if self.sub_name == "QS":
                 for i in range(len(player_1_pieces)):
