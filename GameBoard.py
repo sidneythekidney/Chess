@@ -90,8 +90,9 @@ class GameBoard:
             #Create pawns:
             if(i < 8):
                 player_1_piece = Pieces.Piece("Pawn", [1,i], "White_Pawn.png", 1)
+                player_1_piece.en_passant = False
                 player_2_piece = Pieces.Piece("Pawn", [6,i], "Black_Pawn.png", 2)
-
+                player_2_piece.en_passant = False
             #Create the rooks
             elif(i >= 8 and i < 10):
                 player_1_piece = Pieces.Piece("Rook", [0,(i-8)*7], "White_Rook.png", 1)
@@ -226,7 +227,7 @@ class GameBoard:
             # time.sleep(2)
             # pygame.display.update()
             painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
-                            self.gameDisplay, True, True)
+                            self.gameDisplay, True)
             # for piece in self.player_1_pieces:
             #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             # for piece in self.player_2_pieces:

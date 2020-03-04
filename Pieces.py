@@ -80,7 +80,7 @@ class Piece:
         for i in range(len(copy_self.potential_moves)):
             #print(str(self.potential_moves[i][0])+", "+str(self.potential_moves[i][1]))
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
-                       tiles, copy_1, copy_2, gameDisplay, False, False)
+                       tiles, copy_1, copy_2, gameDisplay, False)
             if copy_self.player == 1:
                 if(copy_self.check(tiles, copy_1, copy_2, 2)):
                     delete_list.append(i)
@@ -154,7 +154,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False)
                    if(not self.check(tiles, copy_1, copy_2, 1)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -170,7 +170,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False)
                    if(not self.check(tiles, copy_1, copy_2, 2)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -187,29 +187,22 @@ class Piece:
         potential_moves = []
         cur = self.current_position
         if self.name == "Pawn":
-            change = False
             if self.player == 1:
                 if cur == self.starting_position:
                     if self.get_piece_on_tile(adder(cur,[1,0]), player_1_pieces, player_2_pieces) == None:
                         potential_moves.append(adder(cur,[1,0]))
                     if self.get_piece_on_tile(adder(cur,[2,0]), player_1_pieces, player_2_pieces) == None:
                         potential_moves.append(adder(cur,[2,0]))
-                        change = True
                 else:
                     if self.get_piece_on_tile(adder(cur,[1,0]), player_1_pieces, player_2_pieces) == None:
                         potential_moves.append(adder(cur,[1,0]))
-                    if self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces) != None:
-                        if(self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces).player == 2):
-                            potential_moves.append(adder(cur,[1,1]))
-                    if self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces) != None:
-                        if(self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces).player == 2):
-                            potential_moves.append(adder(cur,[1,-1]))
                             
                 #Check for possible en passants:
                     right_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
                     if right_piece != None:
+                        print(str(right_piece.name) +" " +  str(right_piece.player))
                         if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
-                            print(right_piece.en_passant)
+                            print("en_passant" + str(right_piece.en_passant))
                             if right_piece.en_passant == True:
                                 # Bug: Piece is not being declared 
                                 potential_moves.append(adder(cur,[1,1]))                             
@@ -217,12 +210,13 @@ class Piece:
                     if left_piece != None:
                         if((left_piece.player == 2) and (left_piece.name == "Pawn") and self.player == 1):
                             if left_piece.en_passant == True:
-                                potential_moves.append(adder(cur,[1,-1]))                             
-                                
-                if change == False:
-                    self.en_passant = False
-                else:
-                    self.en_passant = True
+                                potential_moves.append(adder(cur,[1,-1]))   
+                if self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces) != None:
+                    if(self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces).player == 2):
+                        potential_moves.append(adder(cur,[1,1]))
+                if self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces) != None:
+                    if(self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces).player == 2):
+                        potential_moves.append(adder(cur,[1,-1]))                          
                     
             if self.player == 2:
                 if cur == self.starting_position:
@@ -230,34 +224,28 @@ class Piece:
                         potential_moves.append(adder(cur,[-1,0]))
                     if self.get_piece_on_tile(adder(cur,[-2,0]), player_1_pieces, player_2_pieces) == None:
                         potential_moves.append(adder(cur,[-2,0]))
-                        change = True
                 else:
                     if self.get_piece_on_tile(adder(cur,[-1,0]), player_1_pieces, player_2_pieces) == None:
                         potential_moves.append(adder(cur,[-1,0]))
-                    if self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces) != None:
-                        if(self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces).player == 1):
-                            potential_moves.append(adder(cur,[-1,1]))
-                    if self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces) != None:
-                        if(self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces).player == 1):
-                            potential_moves.append(adder(cur,[-1,-1]))
 
                 #Check for possible en passants:
-                    right_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
+                    right_piece = self.get_piece_on_tile(adder(cur, [0,-1]), player_1_pieces, player_2_pieces)
                     if right_piece != None:
                         if((right_piece.player == 1) and (right_piece.name == "Pawn")):
                             if right_piece.en_passant == True:
-                                potential_moves.append(adder(cur,[-1,1]))
+                                potential_moves.append(adder(cur,[-1,-1]))
                                 
                     left_piece = self.get_piece_on_tile(adder(cur, [0,1]), player_1_pieces, player_2_pieces)
                     if left_piece != None:
                         if((left_piece.player == 1) and (left_piece.name == "Pawn")):
                             if left_piece.en_passant == True:
-                                potential_moves.append(adder(cur,[-1,-1]))
-
-                if change == False:
-                    self.en_passant = False
-                else:
-                    self.en_passant = True
+                                potential_moves.append(adder(cur,[-1,1]))
+                if self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces) != None:
+                    if(self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces).player == 1):
+                        potential_moves.append(adder(cur,[-1,1]))
+                if self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces) != None:
+                    if(self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces).player == 1):
+                        potential_moves.append(adder(cur,[-1,-1]))
                 
         if self.name == "Knight":
                 moves_to_check = [adder(cur,[1,-2]),adder(cur,[2,-1]),adder(cur,[2,1]),
@@ -451,27 +439,10 @@ class Piece:
         return self.potential_moves
 
 
-    # def move_piece(self, position_to_move_to):
-
-    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):
+    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote):
         painted_tile = None
+        delete_coord = None
         curr_pos = [self.current_position[1], self.current_position[0]]
-        for i in range(len(player_1_pieces)):
-            if player_1_pieces[i].current_position == tile.coordinate:
-                del player_1_pieces[i]
-                break
-        for i in range(len(player_2_pieces)):
-            if player_2_pieces[i].current_position == tile.coordinate:
-                del player_2_pieces[i]
-                break
-        
-        if en_passant:
-            if self.player == 2:
-                for piece in player_2_pieces:
-                    piece.en_passant = False
-            if self.player == 1:
-                for piece in player_1_pieces:
-                    piece.en_passant = False
 
         if self.name == "King":
             
@@ -503,11 +474,19 @@ class Piece:
                 self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
             # Allow the pawn to be en passanted:
             # If the pawn gets moved up two spaces it can be immediately en-passanted
-            if(self.current_position[0] == 1 and self.player == 1 and tile.coordinate[0] == 3 and en_passant):
-                print("en_passant!")
+            if(self.current_position[0] == 1 and self.player == 1 and tile.coordinate[0] == 3):
                 self.en_passant = True
-            if(self.current_position[0] == 6 and self.player == 2 and tile.coordinate[0] == 4 and en_passant):
+            if(self.current_position[0] == 6 and self.player == 2 and tile.coordinate[0] == 4):
                 self.en_passant = True
+            #Capture the piece on the right tile when en passant occurs
+            if(tile.coordinate[0] != self.current_position[0] and 
+                tile.coordinate[1] != self.current_position[1] and 
+                self.get_piece_on_tile([tile.coordinate[0],tile.coordinate[1]], player_1_pieces, player_2_pieces) == None):
+                if self.player == 1:
+                    delete_coord = [tile.coordinate[0]-1, tile.coordinate[1]]
+                else:
+                    delete_coord = [tile.coordinate[0]+1, tile.coordinate[1]]
+
         if self.name == "Rook":
             if self.sub_name == "QS":
                 for i in range(len(player_1_pieces)):
@@ -531,6 +510,26 @@ class Piece:
                         player_2_pieces[i].player == self.player):
                         player_2_pieces[i].castle_KS = False
                         break
+        for i in range(len(player_1_pieces)):
+            if player_1_pieces[i].current_position == tile.coordinate or player_1_pieces[i].current_position == delete_coord:
+                del player_1_pieces[i]
+                painted_tile = delete_coord
+                break
+        for i in range(len(player_2_pieces)):
+            if player_2_pieces[i].current_position == tile.coordinate or player_2_pieces[i].current_position == delete_coord:
+                del player_2_pieces[i]
+                painted_tile = delete_coord
+                break
+
+        # Piece still staying around when it gets deleted.
+        if self.player == 1:
+            for piece in player_1_pieces:
+                if piece.name == "Pawn":
+                    self.en_passant = False
+        else:
+            for piece in player_2_pieces:
+                if piece.name == "Pawn":
+                    self.en_passant = False
         self.current_position = tile.coordinate
         # pygame.display.update()
         #self.check(player_1_pieces, player_2_pieces)
