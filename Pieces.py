@@ -637,6 +637,8 @@ class Piece:
                                     selected = True
                                     selected_piece = "Knight"
             self.name = selected_piece
+            if selected_piece == "Rook":
+                self.sub_name = "promoted"
             self.image = self.color + "_" + selected_piece + ".png"
             pygame.draw.rect(gameDisplay, (122,122,122),(600,0,300,600))
             
