@@ -70,9 +70,11 @@ class Piece:
         for piece in copy_1:
             if piece.current_position == self.current_position:
                 copy_self = piece
+                break
         for piece in copy_2:
             if piece.current_position == self.current_position:
                 copy_self = piece
+                break
         # induces check calls itself in a recursive loop
         # Could be a potential bug in this loop:
         final_moves = copy_self.potential_moves
@@ -82,10 +84,10 @@ class Piece:
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
                        tiles, copy_1, copy_2, gameDisplay, False, False)
             if copy_self.player == 1:
-                if(copy_self.check(tiles, copy_1, copy_2, 2)):
+                if(copy_self.check(tiles, copy_1, copy_2, 2, gameDisplay)):
                     delete_list.append(i)
             if copy_self.player == 2:
-                if(self.check(tiles, copy_1, copy_2, 1)):
+                if(self.check(tiles, copy_1, copy_2, 1, gameDisplay)):
                     delete_list.append(i)
         counter = 0
         for i in range(len(delete_list)):
@@ -93,6 +95,35 @@ class Piece:
             counter = counter + 1
         self.potential_moves = final_moves
         return self.potential_moves
+
+    def induces_check_castle(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
+        kingside = False
+        queenside = False
+        #Create a copy of the pieces:
+        copy_1 = copy.deepcopy(player_1_pieces)
+        copy_2 = copy.deepcopy(player_2_pieces)
+        #Iterate through each to find the king:
+        
+        if self.player == 1:
+            for piece in player_1_pieces:
+                if piece.name == "King":
+                    king = piece
+                    break
+        if self.player == 2:
+            for piece in player_2_pieces:
+                if piece.name == "King":
+                    king = piece
+                    break
+        row = king.current_position[0]
+        col = king.current_position[1]
+        king.potential_moves = [[row,col+1], [row, col+2], [row,col-1], [row, col-2]]
+        # Determine if castling endangers the king:
+        king.induces_check(tiles, player_1_pieces, player_2_pieces, gameDisplay)
+        if (([row,col+1] in king.potential_moves) and ([row, col+2] in king.potential_moves)):
+            kingside = True
+        if (([row,col-1] in king.potential_moves) and ([row, col-2] in king.potential_moves)):
+            kingside = True
+        return kingside, queenside
 
     def empty_square(self, tile, player_1_pieces, player_2_pieces, i, max_i):
         name = self.name
@@ -119,7 +150,7 @@ class Piece:
                     return False
             return True
 
-    def check(self,tiles, player_1_pieces, player_2_pieces, player):
+    def check(self,tiles, player_1_pieces, player_2_pieces, player, gameDisplay):
         #Get the position of the two kings on the gameboard:
         for piece in player_1_pieces:
             if piece.name == "King":
@@ -131,11 +162,11 @@ class Piece:
         #Iterate through all of the pieces moves to see if the king is in check.
         if player == 1:
             for piece in player_1_pieces:
-                if king_2_pos in piece.calculate_moves(tiles, player_1_pieces, player_2_pieces):
+                if king_2_pos in piece.calculate_moves(tiles, player_1_pieces, player_2_pieces, gameDisplay):
                     return True
         if player == 2:
             for piece in player_2_pieces:
-                if king_1_pos in piece.calculate_moves(tiles, player_1_pieces, player_2_pieces):
+                if king_1_pos in piece.calculate_moves(tiles, player_1_pieces, player_2_pieces, gameDisplay):
                     return True
         return False
 
@@ -150,12 +181,12 @@ class Piece:
         copy_2 = copy.deepcopy(player_2_pieces)
         if player == 1:
            for piece in copy_2:
-               piece.calculate_moves(tiles, copy_1, copy_2)
+               piece.calculate_moves(tiles, copy_1, copy_2, gameDisplay)
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
                                     tiles,copy_1, copy_2, gameDisplay, False, False)
-                   if(not self.check(tiles, copy_1, copy_2, 1)):
+                   if(not self.check(tiles, copy_1, copy_2, 1, gameDisplay)):
                     #    print(piece.name)
                     #    print(piece.current_position)
                     #    print("not checkmate")
@@ -166,12 +197,12 @@ class Piece:
                    
         if player == 2:
            for piece in copy_1:
-               piece.calculate_moves(tiles, copy_1, copy_2)
+               piece.calculate_moves(tiles, copy_1, copy_2, gameDisplay)
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
                                     tiles,copy_1, copy_2, gameDisplay, False, False)
-                   if(not self.check(tiles, copy_1, copy_2, 2)):
+                   if(not self.check(tiles, copy_1, copy_2, 2, gameDisplay)):
                     #    print(piece.name)
                     #    print(piece.current_position)
                     #    print("not checkmate")
@@ -182,7 +213,7 @@ class Piece:
         print("checkmate")
         return True
 
-    def stalemate(self, tiles, player_1_pieces, player_2_pieces):
+    def stalemate(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
         copy_1 = copy.deepcopy(player_1_pieces)
         copy_2 = copy.deepcopy(player_2_pieces)
 
@@ -190,16 +221,16 @@ class Piece:
 
         if self.player == 1:
             for piece in copy_2:
-                piece.calculate_moves(tiles, copy_1, copy_2)
+                piece.calculate_moves(tiles, copy_1, copy_2, gameDisplay)
                 counter += len(piece.potential_moves)
         if self.player == 2:
             for piece in copy_1:
-                piece.calculate_moves(tiles, copy_1, copy_2)
+                piece.calculate_moves(tiles, copy_1, copy_2, gameDisplay)
                 counter += len(piece.potential_moves)
         if counter == 0:
             print("stalemate")
                           
-    def calculate_moves(self, tiles, player_1_pieces, player_2_pieces):
+    def calculate_moves(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
         potential_moves = []
         cur = self.current_position
         if self.name == "Pawn":
@@ -428,7 +459,10 @@ class Piece:
                     potential_moves.append(adder(cur,[-1,-1]))
                 if self.empty_square(adder(cur,[1,-1]), player_1_pieces, player_2_pieces, 0, 0):
                     potential_moves.append(adder(cur,[1,-1]))
-            #Perform castling logic
+            # Check to see if king can be allowed to castle.
+            if self.starting_position == self.current_position:
+                king_side, queen_side = self.induces_check_castle(tiles, player_1_pieces, player_2_pieces, gameDisplay)
+
             if (self.castle_QS == True and
                 self.empty_square(adder(cur,[0,1]), player_1_pieces, player_2_pieces, 0, 0) and
                 self.empty_square(adder(cur,[0,2]), player_1_pieces, player_2_pieces, 0, 0) and

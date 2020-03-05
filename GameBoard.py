@@ -174,13 +174,13 @@ class GameBoard:
         possible_moves = []
         for piece in self.player_1_pieces:
             if tile.coordinate == piece.current_position:
-                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces)
+                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
                 possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
                                     self.gameDisplay)
                 break
         for piece in self.player_2_pieces:
             if tile.coordinate == piece.current_position:
-                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces)
+                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
                 possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
                                     self.gameDisplay)
                 break
@@ -234,10 +234,10 @@ class GameBoard:
             #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             if painted_tile != None:
                 self.paint_corner(painted_tile)
-            if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player)):
+            if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player, self.gameDisplay)):
                 piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player,
                                 self.gameDisplay)
-            piece.stalemate(self.tiles, self.player_1_pieces, self.player_2_pieces)
+            piece.stalemate(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
         self.already_highlighted = False
         self.display_pieces()
         
