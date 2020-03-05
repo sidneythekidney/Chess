@@ -177,12 +177,25 @@ class GameBoard:
                 possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
                 possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
                                     self.gameDisplay)
+                if piece.name == "King":
+                    print(possible_moves)
+                    if ([piece.current_position[0], piece.current_position[1]-1] not in possible_moves) and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
+                        possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
+                    if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
+                        possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
+                piece.possible_moves = possible_moves
                 break
         for piece in self.player_2_pieces:
             if tile.coordinate == piece.current_position:
                 possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
                 possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
                                     self.gameDisplay)
+                if piece.name == "King":
+                    if [piece.current_position[0], piece.current_position[1]-1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
+                        possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
+                    if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
+                        possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
+                piece.possible_moves = possible_moves
                 break
         for move in possible_moves:
             pygame.draw.circle(self.gameDisplay, (102, 255, 51),

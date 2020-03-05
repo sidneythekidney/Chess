@@ -96,35 +96,6 @@ class Piece:
         self.potential_moves = final_moves
         return self.potential_moves
 
-    def induces_check_castle(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
-        kingside = False
-        queenside = False
-        #Create a copy of the pieces:
-        copy_1 = copy.deepcopy(player_1_pieces)
-        copy_2 = copy.deepcopy(player_2_pieces)
-        #Iterate through each to find the king:
-        
-        if self.player == 1:
-            for piece in player_1_pieces:
-                if piece.name == "King":
-                    king = piece
-                    break
-        if self.player == 2:
-            for piece in player_2_pieces:
-                if piece.name == "King":
-                    king = piece
-                    break
-        row = king.current_position[0]
-        col = king.current_position[1]
-        king.potential_moves = [[row,col+1], [row, col+2], [row,col-1], [row, col-2]]
-        # Determine if castling endangers the king:
-        king.induces_check(tiles, player_1_pieces, player_2_pieces, gameDisplay)
-        if (([row,col+1] in king.potential_moves) and ([row, col+2] in king.potential_moves)):
-            kingside = True
-        if (([row,col-1] in king.potential_moves) and ([row, col-2] in king.potential_moves)):
-            kingside = True
-        return kingside, queenside
-
     def empty_square(self, tile, player_1_pieces, player_2_pieces, i, max_i):
         name = self.name
         if name == "Queen" or name == "Bishop" or name == "Rook":
@@ -460,8 +431,9 @@ class Piece:
                 if self.empty_square(adder(cur,[1,-1]), player_1_pieces, player_2_pieces, 0, 0):
                     potential_moves.append(adder(cur,[1,-1]))
             # Check to see if king can be allowed to castle.
-            if self.starting_position == self.current_position:
-                king_side, queen_side = self.induces_check_castle(tiles, player_1_pieces, player_2_pieces, gameDisplay)
+
+            # if self.starting_position == self.current_position:
+            #     king_side, queen_side = self.induces_check_castle(tiles, player_1_pieces, player_2_pieces, gameDisplay)
 
             if (self.castle_QS == True and
                 self.empty_square(adder(cur,[0,1]), player_1_pieces, player_2_pieces, 0, 0) and
@@ -479,7 +451,6 @@ class Piece:
                 not self.get_piece_on_tile(adder(cur, [0, -3]), player_1_pieces, player_2_pieces) == None and
                 self.get_piece_on_tile(adder(cur, [0, -3]), player_1_pieces, player_2_pieces).name == "Rook" and
                 self.get_piece_on_tile(adder(cur, [0, -3]), player_1_pieces, player_2_pieces).player == self.player):
-                
                 potential_moves.append(adder(cur, [0, -2]))
                  
 
