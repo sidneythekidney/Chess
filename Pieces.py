@@ -4,6 +4,7 @@ import pygame
 import GameBoard
 import Player
 import copy
+import time
 
 white = (255,255,255)
 
@@ -492,14 +493,14 @@ class Piece:
         if self.name == "Pawn":
             if ((self.current_position[0] == 6 and self.player == 1)
                                      or (self.current_position[0] == 1 and self.player == 2)):
-                self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
+                painted_tile = self.promote_pawn(tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote)
             # Allow the pawn to be en passanted:
             # If the pawn gets moved up two spaces it can be immediately en-passanted
             if(self.current_position[0] == 1 and self.player == 1 and tile.coordinate[0] == 3):
                 self.en_passant = True
             if(self.current_position[0] == 6 and self.player == 2 and tile.coordinate[0] == 4):
                 self.en_passant = True
-            #Capture the piece on the right tile when en passant occurs
+            #Capture the piece on the correct tile when en passant occurs
             if(tile.coordinate[0] != self.current_position[0] and 
                 tile.coordinate[1] != self.current_position[1] and 
                 self.get_piece_on_tile([tile.coordinate[0],tile.coordinate[1]], player_1_pieces, player_2_pieces) == None):
@@ -533,17 +534,22 @@ class Piece:
                         break
         for i in range(len(player_1_pieces)):
             if player_1_pieces[i].current_position == tile.coordinate or player_1_pieces[i].current_position == delete_coord:
+                print(player_1_pieces[i].current_position)
                 del player_1_pieces[i]
-                painted_tile = delete_coord
+                if delete_coord != None:
+                    painted_tile = delete_coord
                 break
         for i in range(len(player_2_pieces)):
             if player_2_pieces[i].current_position == tile.coordinate or player_2_pieces[i].current_position == delete_coord:
                 del player_2_pieces[i]
-                painted_tile = delete_coord
+                if delete_coord != None:
+                    painted_tile = delete_coord
                 break
 
         # Piece still staying around when it gets deleted.
+
         self.current_position = tile.coordinate
+
         if en_passant:
             if self.player == 1:
                 for piece in player_1_pieces:
@@ -562,13 +568,17 @@ class Piece:
         #             print(str(piece.player) + " " + str(piece.current_position) + str(piece.en_passant))
         # pygame.display.update()
         # self.check(player_1_pieces, player_2_pieces)
+        print(painted_tile)
         return painted_tile
+
 
     def promote_pawn(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, possible):
         #Display piece options on screen to right of gameboard:
         #piece options include bishop, knight, rook and queen
         #We just need to change the image and name of the piece
         print("promoting pawn")
+        print(len(player_1_pieces))
+        painted_tile = self.current_position
         if possible:
             piece_list = ["Queen", "Rook", "Bishop", "Knight"]
             font = pygame.font.Font('freesansbold.ttf', 18)
@@ -576,7 +586,6 @@ class Piece:
             title = "Select a piece to upgrade pawn"
             
             selected = False
-            self.current_position = tile.coordinate
 
             while not selected:
                 # print(str(self.current_position[0]) + " "+ str(self.current_position[1]))
@@ -637,11 +646,17 @@ class Piece:
                                     selected = True
                                     selected_piece = "Knight"
             self.name = selected_piece
-            if selected_piece == "Rook":
-                self.sub_name = "promoted"
+            # if selected_piece == "Rook":
+                # self.sub_name = "promoted"
+            print(len(player_1_pieces))
             self.image = self.color + "_" + selected_piece + ".png"
             pygame.draw.rect(gameDisplay, (122,122,122),(600,0,300,600))
-            
+            for piece in player_1_pieces:
+                piece.display_piece_to_screen(tiles, gameDisplay)
+            for piece in player_2_pieces:
+                piece.display_piece_to_screen(tiles, gameDisplay)
+            pygame.display.update()
+            return painted_tile
             
 # Helper function for adding two arrays:
 def adder(array1, array2):
