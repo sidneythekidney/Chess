@@ -80,7 +80,7 @@ class Piece:
         for i in range(len(copy_self.potential_moves)):
             #print(str(self.potential_moves[i][0])+", "+str(self.potential_moves[i][1]))
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
-                       tiles, copy_1, copy_2, gameDisplay, False)
+                       tiles, copy_1, copy_2, gameDisplay, False, False)
             if copy_self.player == 1:
                 if(copy_self.check(tiles, copy_1, copy_2, 2)):
                     delete_list.append(i)
@@ -154,7 +154,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False, False)
                    if(not self.check(tiles, copy_1, copy_2, 1)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -170,7 +170,7 @@ class Piece:
                original_position = piece.current_position
                for move in range(len(piece.potential_moves)):
                    piece.move_piece(tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
-                                    tiles,copy_1, copy_2, gameDisplay, False)
+                                    tiles,copy_1, copy_2, gameDisplay, False, False)
                    if(not self.check(tiles, copy_1, copy_2, 2)):
                     #    print(piece.name)
                     #    print(piece.current_position)
@@ -181,7 +181,23 @@ class Piece:
                    copy_2 = copy.deepcopy(player_2_pieces)
         print("checkmate")
         return True
-            
+
+    def stalemate(self, tiles, player_1_pieces, player_2_pieces):
+        copy_1 = copy.deepcopy(player_1_pieces)
+        copy_2 = copy.deepcopy(player_2_pieces)
+
+        counter = 0
+
+        if self.player == 1:
+            for piece in copy_2:
+                piece.calculate_moves(tiles, copy_1, copy_2)
+                counter += len(piece.potential_moves)
+        if self.player == 2:
+            for piece in copy_1:
+                piece.calculate_moves(tiles, copy_1, copy_2)
+                counter += len(piece.potential_moves)
+        if counter == 0:
+            print("stalemate")
                           
     def calculate_moves(self, tiles, player_1_pieces, player_2_pieces):
         potential_moves = []
@@ -202,7 +218,7 @@ class Piece:
                     if right_piece != None:
                         print(str(right_piece.name) +" " +  str(right_piece.player))
                         if((right_piece.player == 2) and (right_piece.name == "Pawn") and self.player == 1):
-                            print("en_passant" + str(right_piece.en_passant))
+                            print("en_passant" + str(right_piece.en_passant) + " " + str(right_piece.current_position))
                             if right_piece.en_passant == True:
                                 # Bug: Piece is not being declared 
                                 potential_moves.append(adder(cur,[1,1]))                             
@@ -439,7 +455,7 @@ class Piece:
         return self.potential_moves
 
 
-    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote):
+    def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):
         painted_tile = None
         delete_coord = None
         curr_pos = [self.current_position[1], self.current_position[0]]
@@ -522,17 +538,25 @@ class Piece:
                 break
 
         # Piece still staying around when it gets deleted.
-        if self.player == 1:
-            for piece in player_1_pieces:
-                if piece.name == "Pawn":
-                    self.en_passant = False
-        else:
-            for piece in player_2_pieces:
-                if piece.name == "Pawn":
-                    self.en_passant = False
         self.current_position = tile.coordinate
+        if en_passant:
+            if self.player == 1:
+                for piece in player_1_pieces:
+                    if piece.name == "Pawn" and piece.current_position != tile.coordinate:
+                        piece.en_passant = False
+            if self.player == 2:
+                for piece in player_2_pieces:
+                    if piece.name == "Pawn" and piece.current_position != tile.coordinate:
+                        piece.en_passant = False
+        # if en_passant:
+        #     for piece in player_1_pieces:
+        #         if piece.name == "Pawn":
+        #             print(str(piece.player) + " " + str(piece.current_position) + str(piece.en_passant))
+        #     for piece in player_2_pieces:
+        #         if piece.name == "Pawn":
+        #             print(str(piece.player) + " " + str(piece.current_position) + str(piece.en_passant))
         # pygame.display.update()
-        #self.check(player_1_pieces, player_2_pieces)
+        # self.check(player_1_pieces, player_2_pieces)
         return painted_tile
 
     def promote_pawn(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, possible):
