@@ -549,16 +549,15 @@ class Piece:
         # Piece still staying around when it gets deleted.
 
         self.current_position = tile.coordinate
-
-        if en_passant:
-            if self.player == 1:
-                for piece in player_1_pieces:
-                    if piece.name == "Pawn" and piece.current_position != tile.coordinate:
-                        piece.en_passant = False
-            if self.player == 2:
-                for piece in player_2_pieces:
-                    if piece.name == "Pawn" and piece.current_position != tile.coordinate:
-                        piece.en_passant = False
+        
+        if self.player == 1:
+            for piece in player_1_pieces:
+                if piece.name == "Pawn" and (piece.current_position != tile.coordinate or piece.current_position[0] != 3):
+                    piece.en_passant = False
+        if self.player == 2:
+            for piece in player_2_pieces:
+                if piece.name == "Pawn" and (piece.current_position != tile.coordinate or piece.current_position[0] != 4):
+                    piece.en_passant = False
         # if en_passant:
         #     for piece in player_1_pieces:
         #         if piece.name == "Pawn":
@@ -568,7 +567,7 @@ class Piece:
         #             print(str(piece.player) + " " + str(piece.current_position) + str(piece.en_passant))
         # pygame.display.update()
         # self.check(player_1_pieces, player_2_pieces)
-        print(painted_tile)
+        # print(painted_tile)
         return painted_tile
 
 
@@ -576,7 +575,7 @@ class Piece:
         #Display piece options on screen to right of gameboard:
         #piece options include bishop, knight, rook and queen
         #We just need to change the image and name of the piece
-        print("promoting pawn")
+        # print("promoting pawn")
         print(len(player_1_pieces))
         painted_tile = self.current_position
         if possible:
@@ -648,7 +647,7 @@ class Piece:
             self.name = selected_piece
             # if selected_piece == "Rook":
                 # self.sub_name = "promoted"
-            print(len(player_1_pieces))
+            # print(len(player_1_pieces))
             self.image = self.color + "_" + selected_piece + ".png"
             pygame.draw.rect(gameDisplay, (122,122,122),(600,0,300,600))
             for piece in player_1_pieces:
