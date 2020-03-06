@@ -170,33 +170,35 @@ class GameBoard:
         # self.display_pieces()
         # pygame.display.update()
 
-    def display_possible_moves(self, tile):
+    def display_possible_moves(self, tile, player):
         possible_moves = []
-        for piece in self.player_1_pieces:
-            if tile.coordinate == piece.current_position:
-                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
-                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
-                                    self.gameDisplay)
-                if piece.name == "King":
-                    print(possible_moves)
-                    if ([piece.current_position[0], piece.current_position[1]-1] not in possible_moves) and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
-                        possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
-                    if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
-                        possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
-                piece.possible_moves = possible_moves
-                break
-        for piece in self.player_2_pieces:
-            if tile.coordinate == piece.current_position:
-                possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
-                possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
-                                    self.gameDisplay)
-                if piece.name == "King":
-                    if [piece.current_position[0], piece.current_position[1]-1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
-                        possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
-                    if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
-                        possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
-                piece.possible_moves = possible_moves
-                break
+        if player == 1:
+            for piece in self.player_1_pieces:
+                if tile.coordinate == piece.current_position:
+                    possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
+                    possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                        self.gameDisplay)
+                    if piece.name == "King":
+                        print(possible_moves)
+                        if ([piece.current_position[0], piece.current_position[1]-1] not in possible_moves) and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
+                            possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
+                        if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
+                            possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
+                    piece.possible_moves = possible_moves
+                    break
+        if player == 2:
+            for piece in self.player_2_pieces:
+                if tile.coordinate == piece.current_position:
+                    possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
+                    possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                        self.gameDisplay)
+                    if piece.name == "King":
+                        if [piece.current_position[0], piece.current_position[1]-1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
+                            possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
+                        if [piece.current_position[0], piece.current_position[1]+1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]+2] in possible_moves):
+                            possible_moves.remove([piece.current_position[0], piece.current_position[1]+2])
+                    piece.possible_moves = possible_moves
+                    break
         for move in possible_moves:
             pygame.draw.circle(self.gameDisplay, (102, 255, 51),
                                (int(self.tiles[move[0]*8+move[1]].x_position) + int(tile.height/2),
@@ -214,14 +216,17 @@ class GameBoard:
                                 (tile.x_position, tile.y_position, tile.height, tile.height))
                 # tile.highlighted = False
 
-    def make_move(self, click_location, selected_tile):
+    def make_move(self, click_location, selected_tile, player):
         tile = self.determine_tile_click(click_location)
         piece = self.get_piece_on_tile(selected_tile)
         if piece == None:
-            return
+            return player
+        return_player = player
         if tile.coordinate in piece.potential_moves:
             self.highlight_square(click_location)
-
+            return_player = 1
+            if player == 1:
+                return_player = 2
             # print("Getting here")
 
             # for i in range(len(self.player_1_pieces)):
@@ -253,6 +258,7 @@ class GameBoard:
             piece.stalemate(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
         self.already_highlighted = False
         self.display_pieces()
+        return return_player
         
     def determine_tile_click(self, click_location):
         for tile in self.tiles:
@@ -265,7 +271,7 @@ class GameBoard:
 
     def play_game(self):
         won = False
-
+        player = 1
         while not won:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN and event.pos[0] < (self.tiles[0].height*8):
@@ -278,10 +284,10 @@ class GameBoard:
                         tile = self.highlight_square(event.pos)
                         self.selected_tile = tile
                         if not tile == None:
-                            self.display_possible_moves(tile)
+                            self.display_possible_moves(tile, player)
                     else:
                         if(self.selected_tile != None):
-                            self.make_move(event.pos, self.selected_tile)
+                            player = self.make_move(event.pos, self.selected_tile, player)
                             self.selected_tile = None
                             self.clear_possible_moves()
                 if event.type == pygame.QUIT:
