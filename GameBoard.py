@@ -25,8 +25,8 @@ class GameBoard:
         self.tiles = []
         self.already_highlighted = False
         self.selected_tile = None
-        
-        self.make_game_board()
+        pygame.init()
+        self.gameDisplay = pygame.display.set_mode((self.display_width, self.display_height))
     
     def paint_corner(self, position):
         tile = self.tiles[position[0]*8+position[1]]
@@ -39,8 +39,6 @@ class GameBoard:
         pygame.display.update()
 
     def make_game_board(self):
-        pygame.init()
-        self.gameDisplay = pygame.display.set_mode((self.display_width, self.display_height))
         pygame.display.set_caption("Chess")
         self.create_tiles()
         self.create_pieces()
@@ -224,9 +222,6 @@ class GameBoard:
         return_player = player
         if tile.coordinate in piece.potential_moves:
             self.highlight_square(click_location)
-            return_player = 1
-            if player == 1:
-                return_player = 2
             # print("Getting here")
 
             # for i in range(len(self.player_1_pieces)):
@@ -244,8 +239,19 @@ class GameBoard:
             # self.display_pieces()
             # time.sleep(2)
             # pygame.display.update()
-            painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
-                            self.gameDisplay, True, True)
+            # if player == 1:
+            #     for piece in self.player_2_pieces:
+            #         piece.potential_moves = []
+            # if player == 2:
+            #     for piece in self.player_1_pieces:
+            #         piece.potential_moves = []
+            painted_tile = None
+            if piece.player == player:
+                painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                self.gameDisplay, True, True)
+                return_player = 1
+                if player == 1:
+                    return_player = 2
             # for piece in self.player_1_pieces:
             #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             # for piece in self.player_2_pieces:
@@ -268,8 +274,40 @@ class GameBoard:
                    and click_location[1] < tile.y_position + tile.height):
                     return tile
 
+    def write_text(self, text, color, center_pos):
+        font = pygame.font.Font('freesansbold.ttf', 25)
+        text = font.render(text, True, color)
+        textRect = text.get_rect()
+        textRect.center = center_pos
+        self.gameDisplay.blit(text, textRect)
+
+    def game_intro(self):
+        started = False
+        self.gameDisplay.fill((0,255,200))
+        while not started:
+            pygame.draw.rect(self.gameDisplay, (246,255,0), (150,200,200,100))
+            pygame.draw.rect(self.gameDisplay, (246,255,0), (450,200,200,100))
+            blue = (0,30,255)
+            center = (400,200)
+            self.write_text("Welcome to Chess!    Select Number of Players:" , blue, (400,100))
+            self.write_text("1 - Coming Soon", blue, (250,250))
+            self.write_text("2",blue, (550, 250))
+            selected = False
+            while not selected:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        pos = event.pos
+                        if pos[0] >= 450 and pos[0] <= 700 and pos[1] >= 200 and pos[1] <= 300:
+                            selected = True
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                pygame.display.update()
+            started = True
 
     def play_game(self):
+        self.game_intro()
+        self.make_game_board()
         won = False
         player = 1
         while not won:

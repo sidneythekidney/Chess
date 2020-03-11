@@ -8,6 +8,7 @@ import Player
 
 red = (255,0,0)
 blue = (0,0,255)
+yellow = (0,127,127)
 
 new_game_board = GameBoard.GameBoard(blue, red, 900, 600)
 new_game_board.play_game()
