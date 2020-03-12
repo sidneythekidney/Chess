@@ -1,10 +1,11 @@
 # This is where all of the game board functions will go.
-
 import pygame
 import GameBoard
 import Player
 import Pieces
 import time
+
+blue = (0,30,255)
 
 class Tile:
     def __init__(self, x_position, y_position, height, coordinate, color):
@@ -27,6 +28,7 @@ class GameBoard:
         self.selected_tile = None
         pygame.init()
         self.gameDisplay = pygame.display.set_mode((self.display_width, self.display_height))
+        self.winning_player = None
     
     def paint_corner(self, position):
         tile = self.tiles[position[0]*8+position[1]]
@@ -259,8 +261,11 @@ class GameBoard:
             if painted_tile != None:
                 self.paint_corner(painted_tile)
             if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player, self.gameDisplay)):
-                piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player,
+                self.winning_player = piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player,
                                 self.gameDisplay)
+                print(self.winning_player)
+                if self.winning_player == None:
+                    print("None")
             piece.stalemate(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
         self.already_highlighted = False
         self.display_pieces()
@@ -287,7 +292,6 @@ class GameBoard:
         while not started:
             pygame.draw.rect(self.gameDisplay, (246,255,0), (150,200,200,100))
             pygame.draw.rect(self.gameDisplay, (246,255,0), (450,200,200,100))
-            blue = (0,30,255)
             center = (400,200)
             self.write_text("Welcome to Chess!    Select Number of Players:" , blue, (400,100))
             self.write_text("1 - Coming Soon", blue, (250,250))
@@ -305,11 +309,41 @@ class GameBoard:
                 pygame.display.update()
             started = True
 
+    def game_outro(self):
+        self.gameDisplay.fill((0,255,200))
+        pygame.draw.rect(self.gameDisplay, (246,255,0), (300,350,200,100))
+        self.write_text("Restart" , blue, (400,400))
+        win_string = "Player " + str(self.winning_player) + " wins"
+        self.write_text(win_string, blue, (400, 200))
+        selected = False
+        while not selected:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    if pos[0] >= 300 and pos[0] <= 500 and pos[1] >= 350 and pos[1] <= 450:
+                        selected = True
+                        self.delete_game_board()
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                pygame.display.update()
+        self.play_game()
+
+    def delete_game_board(self):
+        counter = 0
+        for i in range(len(self.player_1_pieces)):
+            del self.player_1_pieces[0]
+        for i in range(len(self.player_2_pieces)):
+            del self.player_2_pieces[0]
+        for i in range(len(self.tiles)):
+            del self.tiles[0]
+
     def play_game(self):
         self.game_intro()
         self.make_game_board()
         won = False
         player = 1
+        self.winning_player = None
         while not won:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN and event.pos[0] < (self.tiles[0].height*8):
@@ -328,6 +362,9 @@ class GameBoard:
                             player = self.make_move(event.pos, self.selected_tile, player)
                             self.selected_tile = None
                             self.clear_possible_moves()
+                        if self.winning_player != None:
+                            print("true")
+                            self.game_outro()
                 if event.type == pygame.QUIT:
                     won = True
                 self.display_pieces()

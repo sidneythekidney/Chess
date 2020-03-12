@@ -162,7 +162,7 @@ class Piece:
                     #    print(piece.name)
                     #    print(piece.current_position)
                     #    print("not checkmate")
-                       return False
+                        return None
                    piece.current_position = original_position
                    del copy_1
                    copy_1 = copy.deepcopy(player_1_pieces)
@@ -177,13 +177,13 @@ class Piece:
                    if(not self.check(tiles, copy_1, copy_2, 2, gameDisplay)):
                     #    print(piece.name)
                     #    print(piece.current_position)
-                    #    print("not checkmate")
-                       return False
+                        print("not checkmate")
+                        return None
                    piece.current_position = original_position
                    del copy_2
                    copy_2 = copy.deepcopy(player_2_pieces)
         print("checkmate")
-        return True
+        return player
 
     def stalemate(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
         copy_1 = copy.deepcopy(player_1_pieces)
