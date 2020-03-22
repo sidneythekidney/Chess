@@ -21,15 +21,19 @@ class Player():
 
     # Destroys member variable pieces after turn is over:
     def destroy_pieces(self):
-        for i in range(len(self.pieces)):
-            del pieces[0]
-        for i in range(len(self.enemy_pieces)):
-            del enemy_pieces[0]
+        for piece in self.pieces:
+            del self.pieces[0]
+        for piece in self.enemy_pieces:
+            del self.enemy_pieces[0]
 
-    # Checkmate function:
-    def is_checkmate(self):
+    # Makes the given move so we can evaluate it:
+    def make_pot_move(piece, move):
         pass
 
+    # Checkmate function:
+    def is_checkmate(self, move, piece):
+        # Take in the move and the piece moving:
+        pass
 
     # Perform evaluations for each potential turn:
     def evaluation(self):
@@ -47,7 +51,7 @@ class Player():
                 # Reset current move evaluation to 0.
                 current_move = 0
                 # Perform all evaluations
-                current_move += self.is_checkmate()
+                current_move += self.is_checkmate(move, piece)
 
                 # Check to see if the evaluation is the best move:
                 if current_move > best_move_value:
