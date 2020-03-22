@@ -464,7 +464,6 @@ class Piece:
     def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):
         painted_tile = None
         delete_coord = None
-        curr_pos = [self.current_position[1], self.current_position[0]]
 
         if self.name == "King":
             
