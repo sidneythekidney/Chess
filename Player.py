@@ -1,12 +1,14 @@
 # This is where all the player functions and class will be implemented.
-
+import copy
 import pygame
 import GameBoard
 
 class Player():
-    def __init__(self, order):
+    def __init__(self, order, tiles, gameDisplay):
         # Initiate CPU to go first or second.
         self.order = order
+        self.tiles = tiles
+        self.gameDisplay = gameDisplay
     # Create a function for every different evaluation performed and 
     # one to iterate through the given potential move.
 
@@ -21,13 +23,13 @@ class Player():
 
     # Destroys member variable pieces after turn is over:
     def destroy_pieces(self):
-        for piece in self.pieces:
+        while(len(self.pieces) > 0):
             del self.pieces[0]
-        for piece in self.enemy_pieces:
+        while(len(self.enemy_pieces) > 0):
             del self.enemy_pieces[0]
 
     # Makes the given move so we can evaluate it:
-    def make_pot_move(piece, move):
+    def make_pot_move(self, piece, move):
         pass
 
     # Checkmate function:
@@ -48,8 +50,17 @@ class Player():
             # Keep track of the piece index with counter
             counter = 0
             for move in piece.potential_moves:
+                # Reset the pieces after every move calculation:
+                copy_pieces = copy.deepcopy(self.pieces)
+                copy_enemy_pieces = copy.deepcopy(self.enemy_pieces)
+
+                # Make the move we need to evaluate:
+                piece.move_piece(self.tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
+                                self.tiles, copy_pieces, copy_enemy_pieces, self.gameDisplay, False, False)
+
                 # Reset current move evaluation to 0.
                 current_move = 0
+
                 # Perform all evaluations
                 current_move += self.is_checkmate(move, piece)
 
@@ -58,7 +69,21 @@ class Player():
                     # If it is, then update our best move
                     best_move_pos = move
                     best_piece_index = counter
+
+                # Destroy the current state of the pieces:
+                while(len(copy_pieces) > 0):
+                    del copy_pieces[0]
+                while(len(copy_enemy_pieces) > 0):
+                    del copy_enemy_pieces[0]
+
+                if(len(copy_pieces) > 0 or len(copy_enemy_pieces) > 0):
+                    print("Pieces not being deleted correctly!")
+                    exit()
+                
             counter += 1
+            #After performing the given evaluation, we should delete all pieces:
+            self.destroy_pieces()
+        # Return best_piece_index and best_move_pos to allow CPU to make move
         return best_piece_index, best_move_pos
 
 
