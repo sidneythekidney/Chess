@@ -16,14 +16,23 @@ class Piece:
         self.player = player
         self.current_position = starting_position
         self.potential_moves = []
+        self.supporting = []
+        if name == "Pawn":
+            self.rank = 1
+        if name == "Bishop" or name == "Knight":
+            self.rank = 3
         if name == "Rook":
             if starting_position[1] == 0:
                 self.sub_name = "KS"
             else:
                 self.sub_name = "QS"
+            self.rank = 5
+        if name == "Queen":
+            self.rank = 9
         if name == "King":
             self.castle_QS = True
             self.castle_KS = True
+            self.rank = 10
         self.image = image
         for i in range(len(image)):
             if (image[i] == "_"):
@@ -102,23 +111,27 @@ class Piece:
         if name == "Queen" or name == "Bishop" or name == "Rook":
             for piece in player_1_pieces:
                 if piece.current_position == tile and piece.player == self.player:
+                    self.supporting.append(tile)
                     return max_i
                 if piece.current_position == tile and piece.player != self.player:
                     return max_i-1
                     
             for piece in player_2_pieces:
                 if piece.current_position == tile and piece.player == self.player:
+                    self.supporting.append(tile)
                     return max_i
                 if piece.current_position == tile and piece.player != self.player:
                     return max_i-1
             # If we get here just return the previous i
             return i
-        if name == "King" or name == "Knight" or name == "Pawn":
+        if name == "King" or name == "Knight":
             for piece in player_1_pieces:
                 if piece.current_position == tile and piece.player == self.player:
+                    self.supporting.append(tile)
                     return False
             for piece in player_2_pieces:
                 if piece.current_position == tile and piece.player == self.player:
+                    self.supporting.append(tile)
                     return False
             return True
 
@@ -233,9 +246,13 @@ class Piece:
                 if self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces) != None:
                     if(self.get_piece_on_tile(adder(cur, [1,1]), player_1_pieces, player_2_pieces).player == 2):
                         potential_moves.append(adder(cur,[1,1]))
+                    else:
+                        self.supporting.append(adder(cur,[1,1]))
                 if self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces) != None:
                     if(self.get_piece_on_tile(adder(cur, [1,-1]), player_1_pieces, player_2_pieces).player == 2):
-                        potential_moves.append(adder(cur,[1,-1]))                          
+                        potential_moves.append(adder(cur,[1,-1]))
+                    else:
+                        self.supporting.append(adder(cur,[1,-1]))                       
                     
             if self.player == 2:
                 if cur == self.starting_position:
@@ -262,9 +279,13 @@ class Piece:
                 if self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces) != None:
                     if(self.get_piece_on_tile(adder(cur, [-1,1]), player_1_pieces, player_2_pieces).player == 1):
                         potential_moves.append(adder(cur,[-1,1]))
+                    else:
+                        self.supporting.append(adder(cur,[-1,1]))
                 if self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces) != None:
                     if(self.get_piece_on_tile(adder(cur, [-1,-1]), player_1_pieces, player_2_pieces).player == 1):
                         potential_moves.append(adder(cur,[-1,-1]))
+                    else:
+                        self.supporting.append(adder(cur,[-1,-1]))
                 
         if self.name == "Knight":
                 moves_to_check = [adder(cur,[1,-2]),adder(cur,[2,-1]),adder(cur,[2,1]),

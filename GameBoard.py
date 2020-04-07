@@ -251,6 +251,7 @@ class GameBoard:
             if piece.player == player:
                 painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
                                 self.gameDisplay, True, True)
+                # print(piece.potential_moves)
                 return_player = 1
                 if player == 1:
                     return_player = 2

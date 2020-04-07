@@ -1,8 +1,5 @@
-class Example:
-    def __init__(self):
-        self.name = "Toto"
-
-a = Example()
-b = a
-b.name = "Sid"
-print(a.name)
+class Test:
+    def __init__(self, val):
+        self.val = 23
+    def change_val(self):
+        a = self.val
