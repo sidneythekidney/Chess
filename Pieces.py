@@ -1,5 +1,4 @@
 # This is where all of the piece functions will go.
-
 import pygame
 import GameBoard
 import Player
@@ -483,6 +482,7 @@ class Piece:
 
 
     def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):
+
         painted_tile = None
         delete_coord = None
 

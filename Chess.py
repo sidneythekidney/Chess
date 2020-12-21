@@ -1,6 +1,6 @@
 import pygame
 import GameBoard
-import Player
+# import Player
 
 
 # Make a pygame window:
