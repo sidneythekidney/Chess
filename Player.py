@@ -134,6 +134,7 @@ class Player():
         enemy_copy = copy.deepcopy(enemy_pieces)
         square = piece.current_position
         last_rank = piece.rank
+        net_gain_arr = [net_gain]
         # Create the decision loop:
         while True:
             # Find all valid enemy pieces that can attack the square:
@@ -159,6 +160,7 @@ class Player():
                 # Update the net_gain
                 net_gain -= last_rank
                 last_rank = smallest_enemy_piece.rank
+                net_gain_arr.append(net_gain)
             else:
                 # Enemy can no longer attack and the exchange is over.
                 break
@@ -185,9 +187,10 @@ class Player():
                 # Update the net_gain
                 net_gain += last_rank
                 last_rank = smallest_friendly_piece.rank
+                net_gain_arr.append(net_gain)
             else:
                 # Cpu can no longer attack and the game is over.
-                break
+                break        
 
         # Delete friendly and enemy copies
         while (len(friendly_copy) > 0):
@@ -195,8 +198,8 @@ class Player():
         while (len(enemy_copy) > 0):
             del enemy_copy[0]
 
-        # Return exchange value as calculated:
-        return net_gain * self.exchange_weight
+        # Return exchange value as calculated by nash equilibrium:
+        return nash_equilib(net_gain_arr) * self.exchange_weight
         
 
     def square_concentration(self, piece, pieces, enemy_pieces):
@@ -273,6 +276,25 @@ class Player():
         # Return best_piece_index and best_move_pos to allow CPU to make move
         return best_piece_index, best_move_pos
 
+def nash_equilib(arr):
+    exchange = arr[0]
+    for i in range(len(arr)):
+        if (i + 2 >= len(arr)):
+            if (i % 2 == 0):
+                if (arr[-1] > exchange):
+                    exchange = arr[-1]
+                    break
+            else:
+                if (arr[-1] < exchange):
+                    exchange = arr[-1]
+                    break
+        elif (i % 2 == 0 and arr[i+2] >= arr[i]):
+            exchange = arr[i]
+            break
+        elif (i % 2 and arr[i+2] <= arr[i]):
+            exchange = arr[i]
+            break
+    return exchange
 
 """
 Documentation Section:
