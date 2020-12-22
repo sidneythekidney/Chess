@@ -157,6 +157,7 @@ class Piece:
     def checkmate(self, tiles, player_1_pieces, player_2_pieces, player, gameDisplay):
         #A king is in checkmate if it does not have any moves that will move it safety
         # and no other pieces can block the piece or pieces inducing check.
+        # player is the player who induces checkmate (1 or 2)
 
         #Another way of thinking... If i calculate potential moves for every move i can make and my
         #king is still in danger, checkmate applies.

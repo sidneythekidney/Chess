@@ -3,6 +3,11 @@ class Test:
         self.val = 23
     def change_val(self):
         a = self.val
-        
-arr = [1,2,3]
-print(arr[-1])
+
+
+def test():
+    print("Hello")
+    return True
+
+if (3 == 3 and test()):
+    print("Yay!")
