@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Objects in the game:
 
 Pieces
@@ -16,4 +17,24 @@ Game Board
 Human/AI Players
 
 1. Make moves based on available moves.
+=======
+Objects in the game:
+
+Pieces
+
+1. Be able to find available moves.
+2. Be able to move to those available squares.
+3. En Passants for pawns.
+4. Allow pieces to be upgraded.
+
+Game Board
+
+1. Contain pieces.
+2. Display Pieces.
+3. Display potential moves.
+
+Human/AI Players
+
+1. Make moves based on available moves.
+>>>>>>> c68acaf325845d376e4d05c950394423ccd21bcd
 2. See the board and make decisions based on what is on the board.
