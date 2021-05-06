@@ -4,10 +4,9 @@ import pygame
 import GameBoard
 
 class Player():
-    def __init__(self, order, tiles, gameDisplay, pieces, enemy_pieces):
-        # Initiate CPU to go first or second.
-        self.order = order
-        self.tiles = tiles
+    def __init__(self, order, tiles, gameDisplay, player_1_pieces, player_2_pieces):
+        # Create a function for every different evaluation performed and 
+        # one to iterate through the given potential move.
         self.gameDisplay = gameDisplay
         self.cen_score = 0
         self.material_gain_weight = 10
@@ -19,17 +18,28 @@ class Player():
         self.opens_moves_weight = 20
         self.defends_king_weight=  20
         self.remove_king_defense_weight = 20
-        # Create a function for every different evaluation performed and 
-        # one to iterate through the given potential move.
+
+        # Initiate CPU to go first or second.
+        self.tiles = tiles
+        self.order = order
+        self.determine_pieces(copy.deepcopy(player_1_pieces), copy.deepcopy(player_2_pieces))
 
     # Determines whose pieces are whose:
     def determine_pieces(self, player_1_pieces, player_2_pieces):
         if self.order == 1:
+            print("player 1")
             self.pieces = player_1_pieces
             self.enemy_pieces = player_2_pieces
         else:
+            print("player 2")
             self.pieces = player_2_pieces
             self.enemy_pieces = player_1_pieces
+        for piece in player_1_pieces:
+            piece.calculate_moves(self.tiles, player_1_pieces, player_2_pieces, self.gameDisplay)
+            piece.induces_check(self.tiles, player_1_pieces, player_2_pieces, self.gameDisplay)
+        for piece in player_2_pieces:
+            piece.calculate_moves(self.tiles, player_1_pieces, player_2_pieces, self.gameDisplay)
+            piece.induces_check(self.tiles, player_1_pieces, player_2_pieces, self.gameDisplay)
 
     # Destroys member variable pieces after turn is over:
     def destroy_pieces(self):
@@ -46,15 +56,15 @@ class Player():
             # We know we have clutched a checkmate, RP +1000000
             return 1000000
         # Check to see if we can be checkmated in the next opponent move:
-        for enemy_piece in enemy_copy:
+        for enemy_piece in enemy_pieces:
             for move in enemy_piece.potential_moves:
                 enemy_copy = copy.deepcopy(enemy_pieces)
                 friendly_copy = copy.deepcopy(pieces)
                 if self.order == 0:
-                    enemy_piece.move_piece(self.tiles[enemy_piece.potential_moves[move][0]*8 + enemy_piece.potential_moves[move][1]],
+                    enemy_piece.move_piece(self.tiles[move[0]*8 + move[1]],
                                     self.tiles, friendly_copy, enemy_copy, self.gameDisplay, True, True)
                 else:
-                    enemy_piece.move_piece(self.tiles[enemy_piece.potential_moves[move][0]*8 + enemy_piece.potential_moves[move][1]],
+                    enemy_piece.move_piece(self.tiles[move[0]*8 + move[1]],
                                     self.tiles, enemy_copy, friendly_copy, self.gameDisplay, True, True)
                 # See if opponent move induces checkmate
                 if ((self.order == 0 and enemy_piece.checkmate(self.tiles, friendly_copy, enemy_copy, 2, self.gameDisplay) == 2) or
@@ -163,12 +173,10 @@ class Player():
             smallest_enemy_piece = None
             for piece in enemy_copy:
                 # Calculate valid enemy piece moves
-                if self.order == 0:
-                    piece.calculate_moves(self.tiles, friendly_copy, enemy_copy, self.gameDisplay)
-                else:
-                    piece.calculate_moves(self.tiles, enemy_copy, friendly_copy, self.gameDisplay)
+                piece.calculate_moves(self.tiles, friendly_copy, enemy_copy, self.gameDisplay)
+                # piece.induces_check(self.tiles, friendly_copy, enemy_copy, self.gameDisplay)   
                 if square in piece.potential_moves:
-                    if smallest_enemy_piece == None or piece.rank < smallest_enemy_piece:
+                    if smallest_enemy_piece == None or piece.rank < smallest_enemy_piece.rank:
                         smallest_enemy_piece = piece
             # Attack the square with smallest enemy piece if possible.
             if smallest_enemy_piece != None:
@@ -191,12 +199,10 @@ class Player():
             smallest_friendly_piece = None
             for piece in friendly_copy:
                 # Calculate valid friendly piece moves:
-                if self.order == 0:
-                    piece.calculate_moves(self.tiles, friendly_copy, enemy_copy, self.gameDisplay)
-                else:
-                    piece.calculate_moves(self.tiles, enemy_copy, friendly_copy, self.gameDisplay)
+                piece.calculate_moves(self.tiles, friendly_copy, enemy_copy, self.gameDisplay)
+                # piece.induces_check(self.tiles, friendly_copy, enemy_copy, self.gameDisplay) 
                 if square in piece.potential_moves:
-                    if smallest_friendly_piece == None or piece.rank < smallest_friendly_piece:
+                    if smallest_friendly_piece == None or piece.rank < smallest_friendly_piece.rank:
                         smallest_friendly_piece = piece
             if smallest_friendly_piece != None:
                 # Move piece according to whether CPU is black or white:
@@ -226,20 +232,16 @@ class Player():
     def opens_friendly_moves(self, pieces, enemy_pieces):
         num_moves = 0
         for piece in pieces:
-            if (self.order == 0):
-                piece.calculate_moves(self.tiles, pieces, enemy_pieces, self.gameDisplay)
-            else:
-                piece.calculate_moves(self.tiles, enemy_pieces, pieces, self.gameDisplay)
+            piece.calculate_moves(self.tiles, pieces, enemy_pieces, self.gameDisplay)
+            # piece.induces_check(self.tiles, pieces, enemy_pieces, self.gameDisplay) 
             num_moves += len(piece.potential_moves)
         return self.opens_moves_weight * num_moves
 
     def closes_enemy_moves(self, pieces, enemy_pieces):
         num_moves = 0
         for enemy_piece in pieces:
-            if (self.order == 0):
-                enemy_piece.calculate_moves(self.tiles, pieces, enemy_pieces, self.gameDisplay)
-            else:
-                enemy_piece.calculate_moves(self.tiles, enemy_pieces, pieces, self.gameDisplay)
+            enemy_piece.calculate_moves(self.tiles, pieces, enemy_pieces, self.gameDisplay)
+            # enemy_piece.induces_check(self.tiles, pieces, enemy_pieces, self.gameDisplay)
             num_moves += len(enemy_piece.potential_moves)
         return -self.opens_moves_weight * num_moves
 
@@ -291,20 +293,26 @@ class Player():
         # Set a current diff measure to calculate diff score:
         current_diff = self.calc_diff(self.pieces, self.enemy_pieces)
         # Iterate through all of the potential moves in CPU pieces:
+        # Keep track of the piece index with counter
+        counter = 0
+
+        print("good pieces: ", len(self.pieces))
+        print("bad pieces: ", len(self.enemy_pieces))
+
         for piece in self.pieces:
-            # Keep track of the piece index with counter
-            counter = 0
+            # print("found a piece")
             for move in piece.potential_moves:
+                # print("found a potential move")
                 # Reset the pieces after every move calculation:
                 copy_pieces = copy.deepcopy(self.pieces)
-                copy_enemy_pieces = copy.deepcopy(self.enemy_pieces) 
+                copy_enemy_pieces = copy.deepcopy(self.enemy_pieces)
 
                 # Make the move we need to evaluate based on whether or not CPU is player 1 or 2:
-                if self.order == 0:
-                    piece.move_piece(self.tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
+                if self.order == 2:
+                    piece.move_piece(self.tiles[move[0]*8+move[1]],
                                 self.tiles, copy_pieces, copy_enemy_pieces, self.gameDisplay, True, True)
                 else:
-                    piece.move_piece(self.tiles[piece.potential_moves[move][0]*8+piece.potential_moves[move][1]],
+                    piece.move_piece(self.tiles[move[0]*8+move[1]],
                                 self.tiles, copy_enemy_pieces, copy_pieces, self.gameDisplay, True, True)
 
                 # Reset current move evaluation to 0.

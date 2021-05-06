@@ -73,35 +73,62 @@ class Piece:
         return final_moves
 
     def induces_check(self, tiles, player_1_pieces, player_2_pieces, gameDisplay):
-        #Change this so we are working with copies
-        copy_1 = copy.deepcopy(player_1_pieces)
-        copy_2 = copy.deepcopy(player_2_pieces)
-        for piece in copy_1:
+        # Find appropriate copied element
+        # print("player 1 pos:")
+        for piece in player_1_pieces:
+            # print(piece.current_position)
             if piece.current_position == self.current_position:
-                copy_self = piece
+                this_piece = copy.deepcopy(piece)
                 break
-        for piece in copy_2:
+        for piece in player_2_pieces:
             if piece.current_position == self.current_position:
-                copy_self = piece
+                this_piece = copy.deepcopy(piece)
                 break
         # induces check calls itself in a recursive loop
         # Could be a potential bug in this loop:
-        final_moves = copy_self.potential_moves
+        final_moves = this_piece.potential_moves
         delete_list = []
-        for i in range(len(copy_self.potential_moves)):
+        for i in range(len(this_piece.potential_moves)):
             #print(str(self.potential_moves[i][0])+", "+str(self.potential_moves[i][1]))
+            # This still causes us to delete the copies though
+            # This should fix the problem:
+            copy_self = None
+            copy_1 = copy.deepcopy(player_1_pieces)
+            copy_2 = copy.deepcopy(player_2_pieces)
+            for piece in copy_1:
+                # print(piece.current_position)
+                if piece.current_position == this_piece.current_position:
+                    copy_self = piece
+                    break
+            for piece in copy_2:
+                if piece.current_position == this_piece.current_position:
+                    copy_self = piece
+                    break
             copy_self.move_piece(tiles[copy_self.potential_moves[i][0]*8+copy_self.potential_moves[i][1]],
-                       tiles, copy_1, copy_2, gameDisplay, False, False)
+                    tiles, copy_1, copy_2, gameDisplay, False, False)
             if copy_self.player == 1:
                 if(copy_self.check(tiles, copy_1, copy_2, 2, gameDisplay)):
                     delete_list.append(i)
             if copy_self.player == 2:
-                if(self.check(tiles, copy_1, copy_2, 1, gameDisplay)):
+                print("Got here")
+                if(copy_self.check(tiles, copy_1, copy_2, 1, gameDisplay)):
+                    print("Deleted!")
+                    print(copy_self.current_position)
+                    print("copy_2_positions:")
+                    for piece in copy_2:
+                        print(piece.current_position)
                     delete_list.append(i)
+            # Delete the copied elements:
+            del copy_self
+            while (len(copy_1) != 0):
+                del copy_1[0]
+            while (len(copy_2) != 0):
+                del copy_2[0]
         counter = 0
         for i in range(len(delete_list)):
             del final_moves[delete_list[i]-counter]
             counter = counter + 1
+        del this_piece
         self.potential_moves = final_moves
         return self.potential_moves
 
@@ -147,6 +174,7 @@ class Piece:
         if player == 1:
             for piece in player_1_pieces:
                 if king_2_pos in piece.calculate_moves(tiles, player_1_pieces, player_2_pieces, gameDisplay):
+                    print(piece.name)
                     return True
         if player == 2:
             for piece in player_2_pieces:
@@ -475,11 +503,10 @@ class Piece:
                 self.get_piece_on_tile(adder(cur, [0, -3]), player_1_pieces, player_2_pieces).player == self.player):
                 potential_moves.append(adder(cur, [0, -2]))
                  
-
-        #This calls check which in turn calls calculate_moves so we have a recursive infinite loop
         self.potential_moves = potential_moves
-        potential_moves = self.crop_potential_moves(tiles, player_1_pieces, player_2_pieces)
-        return self.potential_moves
+        self.potential_moves = self.crop_potential_moves(tiles, player_1_pieces, player_2_pieces)
+        # self.potential_moves = self.induces_check(tiles, player_1_pieces, player_2_pieces, gameDisplay)
+        return potential_moves
 
 
     def move_piece(self, tile, tiles, player_1_pieces, player_2_pieces, gameDisplay, promote, en_passant):

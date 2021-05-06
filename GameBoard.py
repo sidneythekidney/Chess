@@ -190,8 +190,10 @@ class GameBoard:
             for piece in self.player_2_pieces:
                 if tile.coordinate == piece.current_position:
                     possible_moves = piece.calculate_moves(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
+                    print("possible moves before induces check: ", possible_moves)
                     possible_moves = piece.induces_check(self.tiles, self.player_1_pieces, self.player_2_pieces,
                                         self.gameDisplay)
+                    print("possible moves: ", possible_moves)
                     if piece.name == "King":
                         if [piece.current_position[0], piece.current_position[1]-1] not in possible_moves and ([piece.current_position[0], piece.current_position[1]-2] in possible_moves):
                             possible_moves.remove([piece.current_position[0], piece.current_position[1]-2])
@@ -224,29 +226,6 @@ class GameBoard:
         return_player = player
         if tile.coordinate in piece.potential_moves:
             self.highlight_square(click_location)
-            # print("Getting here")
-
-            # for i in range(len(self.player_1_pieces)):
-            #     print(self.player_1_pieces[i].color + " " +
-            #           self.player_1_pieces[i].name + ": " + 
-            #           str(self.player_1_pieces[i].current_position))
-            # for i in range(len(self.player_2_pieces)):
-            #     print(self.player_2_pieces[i].color + " " +
-            #           self.player_2_pieces[i].name + ": " + 
-            #           str(self.player_2_pieces[i].current_position))
-
-            # ERROR OCCURING BEFORE THIS LINE, ERROR IN DISPLAYING PIECES. PIECE POSITIONS CORRECT
-            # time.sleep(5)
-            # Position of the piece is correct but piece not displaying:
-            # self.display_pieces()
-            # time.sleep(2)
-            # pygame.display.update()
-            # if player == 1:
-            #     for piece in self.player_2_pieces:
-            #         piece.potential_moves = []
-            # if player == 2:
-            #     for piece in self.player_1_pieces:
-            #         piece.potential_moves = []
             painted_tile = None
             if piece.player == player:
                 painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
@@ -255,10 +234,6 @@ class GameBoard:
                 return_player = 1
                 if player == 1:
                     return_player = 2
-            # for piece in self.player_1_pieces:
-            #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
-            # for piece in self.player_2_pieces:
-            #     print(piece.color + " " + piece.name + ": " + str(piece.current_position))
             if painted_tile != None:
                 self.paint_corner(painted_tile)
             if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player, self.gameDisplay)):
@@ -271,6 +246,71 @@ class GameBoard:
         self.already_highlighted = False
         self.display_pieces()
         return return_player
+
+    def get_cpu_move(self, player):
+        # print("order: ", order)
+        # print("player 2 pieces length: ", len(self.player_2_pieces))
+        cpu = Player.Player(player, self.tiles, self.gameDisplay, self.player_1_pieces, self.player_2_pieces)
+        best_piece_index, best_move_pos = cpu.perform_evaluation()
+        # Piece represents the piece with the best move:
+        print("Best piece index: ", best_piece_index)
+        piece = None
+        if (player == 1):
+            #  The CPU is player 1
+            piece = self.player_1_pieces[best_piece_index]
+        else:
+            # The CPU is player 2
+            piece = self.player_2_pieces[best_piece_index]
+        print("Name of piece", piece.name)
+        print("Valid moves: ", piece.potential_moves)
+        # print("player 2 pieces length: ", len(self.player_2_pieces))
+        # print("best piece index: ", best_piece_index)
+        # print("best move pos: ", best_move_pos)
+        # Make best move accordingly:
+        # painted_tile = None
+        # if (order == 1):
+        #     piece = self.player_2_pieces[best_piece_index]
+        # else:
+        #     piece = self.player_1_pieces[best_piece_index]
+        #  Obtain correct tile
+        tile = self.tiles[best_move_pos[0]*8+best_move_pos[1]]
+        # print("tile coord: ", tile.coordinate)
+        # print("player 1 pieces")
+        # for piece in self.player_1_pieces:
+        #     print(piece.current_position)
+        # print("player 2 pieces")
+        # for piece in self.player_2_pieces:
+        #     print(piece.current_position)
+        # piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
+        #                         self.gameDisplay, True, True)
+        # print("player 2 pieces length: ", len(self.player_2_pieces))
+        # for piece in self.player_2_pieces:
+        #     print(piece.current_position)
+        return piece, tile
+
+    def make_cpu_move(self, player, tile, piece):
+        # Piece and tile will always be assumed valid:
+        self.display_pieces()
+        curr_pos = piece.current_position
+        painted_tile = None
+        painted_tile = piece.move_piece(tile, self.tiles, self.player_1_pieces, self.player_2_pieces,
+                                self.gameDisplay, True, True)
+        
+        self.paint_corner(curr_pos)
+        return_player = 3-player
+        if painted_tile != None:
+            self.paint_corner(painted_tile)
+        if(piece.check(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player, self.gameDisplay)):
+            self.winning_player = piece.checkmate(self.tiles, self.player_1_pieces, self.player_2_pieces, piece.player,
+                            self.gameDisplay)
+            print(self.winning_player)
+            if self.winning_player == None:
+                print("None")
+        piece.stalemate(self.tiles, self.player_1_pieces, self.player_2_pieces, self.gameDisplay)
+        self.already_highlighted = False
+        self.display_pieces()
+        return return_player
+
         
     def determine_tile_click(self, click_location):
         for tile in self.tiles:
@@ -288,27 +328,30 @@ class GameBoard:
         self.gameDisplay.blit(text, textRect)
 
     def game_intro(self):
-        started = False
+        # Returns a boolean value based on whether the game is 1-player or not.
         self.gameDisplay.fill((0,255,200))
-        while not started:
-            pygame.draw.rect(self.gameDisplay, (246,255,0), (150,200,200,100))
-            pygame.draw.rect(self.gameDisplay, (246,255,0), (450,200,200,100))
-            center = (400,200)
-            self.write_text("Welcome to Chess!    Select Number of Players:" , blue, (400,100))
-            self.write_text("1 - Coming Soon", blue, (250,250))
-            self.write_text("2",blue, (550, 250))
-            selected = False
-            while not selected:
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        pos = event.pos
-                        if pos[0] >= 450 and pos[0] <= 700 and pos[1] >= 200 and pos[1] <= 300:
-                            selected = True
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        exit()
-                pygame.display.update()
-            started = True
+        one_player = False
+        pygame.draw.rect(self.gameDisplay, (246,255,0), (150,200,200,100))
+        pygame.draw.rect(self.gameDisplay, (246,255,0), (450,200,200,100))
+        self.write_text("Welcome to Chess!    Select Number of Players:" , blue, (400,100))
+        self.write_text("1 - Coming Soon", blue, (250,250))
+        self.write_text("2",blue, (550, 250))
+        selected = False
+        while not selected:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    if (pos[0] >= 450 and pos[0] <= 650) and (pos[1] >= 200 and pos[1] <= 300):
+                        selected = True
+                    if (pos[0] >= 150 and pos[0] <= 350) and (pos[1] >= 200 and pos[1] <= 300):
+                        selected = True
+                        one_player = True
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+            pygame.display.update()
+        print(one_player)
+        return one_player
 
     def game_outro(self):
         self.gameDisplay.fill((0,255,200))
@@ -340,7 +383,7 @@ class GameBoard:
             del self.tiles[0]
 
     def play_game(self):
-        self.game_intro()
+        one_player = self.game_intro()
         self.make_game_board()
         won = False
         player = 1
@@ -363,8 +406,15 @@ class GameBoard:
                             player = self.make_move(event.pos, self.selected_tile, player)
                             self.selected_tile = None
                             self.clear_possible_moves()
+                            if (one_player and player == 2):
+                                print("Move CPU")
+                                piece, tile = self.get_cpu_move(player)
+                                print(piece.current_position)
+                                print(tile.coordinate)
+                                player = self.make_cpu_move(player, tile, piece)
+                                print("Finished making CPU move!")
                         if self.winning_player != None:
-                            print("true")
+                            print("The game has been won!")
                             self.game_outro()
                 if event.type == pygame.QUIT:
                     won = True
